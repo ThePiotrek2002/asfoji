@@ -7,25 +7,25 @@ var bodyParser = require("body-parser")
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
-let users = [
-    { id: 1, log: "AAA", pass: "aaa", wiek: 10, uczen: "checked", plec: "mezczyzna" },
-    { id: 2, log: "BBB", pass: "bbb", wiek: 5, uczen: "unchecked", plec: "kobieta" },
-    { id: 3, log: "CCC", pass: "ccc", wiek: 15, uczen: "unchecked", plec: "mezczyzna" },
-    { id: 4, log: "DDD", pass: "ddd", wiek: 6, uczen: "checked", plec: "kobieta" },
-    { id: 5, log: "EEE", pass: "eee", wiek: 10, uczen: "checked", plec: "mezczyzna" },
+let u_tab = [
+    { id: 1, log: "AAA", pass: "aaa", age: 13, uczen: "checked", gender: "kobieta" },
+    { id: 2, log: "BBB", pass: "bbb", age: 7, uczen: "checked", gender: "mezczyzna" },
+    { id: 3, log: "CCC", pass: "ccc", age: 11, uczen: "unchecked", gender: "kobieta" },
+    { id: 4, log: "DDD", pass: "ddd", age: 18, uczen: "checked", gender: "kobieta" },
+    { id: 5, log: "EEE", pass: "eee", age: 11, uczen: "unchecked", gender: "mezczyzna" },
 ]
 
-let isLogged = false
+let log = false
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + "/main.html"))
-    console.log(users)
+    console.log(u_tab)
 })
 app.get('/main', (req, res) => {
     res.sendFile(path.join(__dirname + "/main.html"))
 })
 app.get('/logout', (req, res) => {
-    isLogged = false
+    log = false
     res.sendFile(path.join(__dirname + "/main.html"))
 })
 app.get('/register', function(req, res) {
@@ -35,7 +35,7 @@ app.get('/login', function(req, res) {
     res.sendFile(path.join(__dirname + "/login.html"))
 })
 app.get('/admin', function(req, res) {
-    if (isLogged == false) {
+    if (log == false) {
         res.sendFile(path.join(__dirname + "/admin.html"))
     } else {
         res.sendFile(path.join(__dirname + "/logged_admin.html"))
@@ -48,164 +48,167 @@ app.get('/admin', function(req, res) {
 app.post('/register', function(req, res) {
 
     const login = req.body.login
-    const passwd = req.body.passwd
+    const password = req.body.password
     const age = req.body.age
-    const gender = req.body.plec
+    const gender = req.body.gender
     if (req.body.isStudent) {
-        var uczenF = "checked"
+        var ok_uczen = "checked"
     } else {
-        var uczenF = "unchecked"
+        var ok_uczen = "unchecked"
     }
-    if (!login || !passwd || !age || !gender) {
-        res.send("Proszę uzupełnić wszystkie pola poprawnie")
+    if (!login || !password || !age || !gender) {
+        res.send("Proszę wprowadzić dane")
     } else {
-        var isValid = true
-        for (let i = 0; i < users.length; i++) {
-            if (login == users[i].log) {
-                var isValid = false
+        var x = true
+        for (let i = 0; i < u_tab.length; i++) {
+            if (login == u_tab[i].log) {
+                var x = false
             }
         }
-        if (isValid == false) {
+        if (x == false) {
             res.send("Użytkownik o takim loginie już istnieje")
-            console.log(users)
-            var isValid = true;
+            var x = true;
         } else {
-            users.push({ id: (users.length + 1), log: login, pass: passwd, wiek: age, uczen: uczenF, plec: gender })
-            console.log(users)
+            u_tab.push({ id: (u_tab.length + 1), log: login, pass: password, age: age, uczen: ok_uczen, gender: gender })
             res.send("Witaj " + login + " jesteś zarejestrowany!")
         }
     }
 })
 app.post('/login', function(req, res) {
     const login = req.body.login
-    const passwd = req.body.passwd
-    if (!login || !passwd) {
-        res.send("Proszę uzupełnić wszystkie pola poprawnie")
+    const password = req.body.password
+    if (!login || !password) {
+        res.send("Proszę wprowadzić dane")
     } else {
-        var isFound = false
-        for (let i = 0; i < users.length; i++) {
-            if (login == users[i].log) {
-                if (passwd == users[i].pass) {
-                    var isFound = true
+        var zalogowany = false
+        for (let i = 0; i < u_tab.length; i++) {
+            if (login == u_tab[i].log) {
+                if (password == u_tab[i].pass) {
+                    var zalogowany = true
                 }
             }
         }
-        if (isFound == true) {
-            isLogged = true;
+        if (zalogowany == true) {
+            log = true;
             res.redirect("/admin")
         } else {
-            isLogged = false
+            log = false
             res.send("Brak użytkownika w bazie")
         }
     }
 })
 
 app.get("/show", (req, res) => {
-    if (isLogged){
-        let response = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 10px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;}</style></head>';
+    if (log){
+        let y = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 15px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;}</style></head>';
 
-        response += '<div id="links"><a href="/sort">sort</a><a href="/gender">gender</a><a href="/show">show</a></div>';
+        y += '<div id="links"><a href="/sort">Sort</a><a href="/gender">Gender</a><a href="/show">Show</a></div>';
 
-        response += '<table style="width:100%;">';
-        users.forEach(user => {
-            response += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>uczeń: ${user.uczen == "checked" ? '<input type="checkbox" disabled checked>' : '<input type="checkbox" disabled>'}</td><td>wiek: ${user.wiek}</td><td>płeć: ${user.plec}</td></tr>`;
+        y += '<table style="width:100%;">';
+        u_tab.forEach(user => {
+            y += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>uczeń: ${user.uczen == "checked" ? '<input type="checkbox" disabled checked>' : '<input type="checkbox" disabled>'}</td><td>age: ${user.age}</td><td>płeć: ${user.gender}</td></tr>`;
         })
-        response += "</table>"
+        y += "</table>"
 
-        res.send(response);
+        res.send(y);
     } else {
         res.redirect("/admin.html");
     }
 })
+
 app.get("/gender", (req, res) => {
-    if (isLogged){
-        let response = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 10px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;}</style></head>';
+    if (log){
+        let y = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 15px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;}</style></head>';
 
-        response += '<div id="links"><a href="/sort">sort</a><a href="/gender">gender</a><a href="/show">show</a></div>';
+        y += '<div id="links"><a href="/sort">Sort</a><a href="/gender">Gender</a><a href="/show">Show</a></div>';
 
-        let maleTable = '<table style="width:100%;">';
-        let femaleTable = '<table style="width:100%;">';
+        let m_tab = '<table style="width:100%;">';
+        let k_tab = '<table style="width:100%;">';
 
-        users.forEach(user => {
-            if (user.plec == "kobieta"){
-                femaleTable += `<tr><td width="50%">id: ${user.id}</td><td width="50%">płeć: ${user.plec}</td></tr>`
+        u_tab.forEach(user => {
+            if (user.gender == "kobieta"){
+                k_tab += `<tr><td width="50%">id: ${user.id}</td><td width="50%">płeć: ${user.gender}</td></tr>`
             } else {
-                maleTable += `<tr><td width="50%">id: ${user.id}</td><td width="50%">płeć: ${user.plec}</td></tr>`
+                m_tab += `<tr><td width="50%">id: ${user.id}</td><td width="50%">płeć: ${user.gender}</td></tr>`
             }
         })
 
-        maleTable += '</table>';
-        femaleTable += '</table>';
+        m_tab += '</table>';
+        k_tab += '</table>';
 
-        response += maleTable;
-        response += "</br></br>";
-        response += femaleTable;
+        y += m_tab;
+        y += "</br></br>";
+        y += k_tab;
 
-        res.send(response);
+        res.send(y);
     } else {
         res.redirect("/admin.html");
     }
 });
+
 app.get("/sort", (req, res) => {
-    if (isLogged){
-        let response = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 10px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;} form{ margin: 20px 0;} input,label{margin: 0 10px; font-size: 1.3em}</style></head>';
+    if (log){
+        let y = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 15px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;} form{ margin: 20px 0;} input,label{margin: 0 10px; font-size: 1.3em}</style></head>';
 
-        response += '<div id="links"><a href="/sort">sort</a><a href="/gender">gender</a><a href="/show">show</a></div>';
+        y += '<div id="links"><a href="/sort">Sort</a><a href="/gender">Gender</a><a href="/show">Show</a></div>';
 
-        response += '<form onchange="this.submit()" action="/sort" method="POST"><label for="rosnaco">rosnąco</label><input type="radio" name="sort" id="rosnaco" value="rosnaco" checked><label for="malejaco">malejąco</label><input type="radio" name="sort" id="malejaco" value="malejaco"></form>'
+        y += '<form onchange="this.submit()" action="/sort" method="POST"><label for="rosnaco">Rosnąco</label><input type="radio" name="sort" id="rosnaco" value="rosnaco" checked><label for="malejaco">Malejąco</label><input type="radio" name="sort" id="malejaco" value="malejaco"></form>'
 
-        let sortedTable = [...users];
+        let sort_tab = [...u_tab];
 
         if (req.body.sort){
             if (req.body.sort == "rosnaco"){
-                sortedTable.sort((a,b) => a.wiek - b.wiek);
+                sort_tab.sort((a,b) => a.age - b.age);
             } else {
-                sortedTable.sort((a,b) => b.wiek - a.wiek);
+                sort_tab.sort((a,b) => b.age - a.age);
             }
         } else {
-            sortedTable.sort((a,b) => a.wiek - b.wiek);
+            sort_tab.sort((a,b) => a.age - b.age);
         }
 
-        response += '<table style="width:100%;">';
-        sortedTable.forEach(user => {
-            response += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>wiek: ${user.wiek}</td></tr>`;
+        y += '<table style="width:100%;">';
+        sort_tab.forEach(user => {
+            y += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>age: ${user.age}</td></tr>`;
         })
-        response += "</table>"
+        y += "</table>"
 
-        res.send(response);
+        res.send(y);
     } else {
         res.redirect("/admin.html");
     }
 })
+
 app.post("/sort", (req, res) => {
-    if (isLogged){
-        let response = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 10px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;} form{ margin: 20px 0;} input,label{margin: 0 10px; font-size: 1.3em}</style></head>';
+    if (log){
+        let y = '<head><style>body{color: white; background-color: #1a1a1a;} th,tr,td{border: 1px solid #c9bf4f; padding: 15px; font-size: 1.2em;} a{color: white; margin: 0 10px; font-size: 1.5em} #links{margin: 20px 0;} form{ margin: 20px 0;} input,label{margin: 0 10px; font-size: 1.3em}</style></head>';
 
-        response += '<div id="links"><a href="/sort">sort</a><a href="/gender">gender</a><a href="/show">show</a></div>';
+        y += '<div id="links"><a href="/sort">Sort</a><a href="/gender">Gender</a><a href="/show">Show</a></div>';
 
-        response += `<form onchange="this.submit()" action="/sort" method="POST"><label for="rosnaco">rosnąco</label><input type="radio" name="sort" id="rosnaco" value="rosnaco" ${req.body.sort == "rosnaco" ? "checked" : ""}><label for="malejaco">malejąco</label><input type="radio" name="sort" id="malejaco" value="malejaco" ${req.body.sort == "malejaco" ? "checked" : ""}></form>`
+        y += `<form onchange="this.submit()" action="/sort" method="POST"><label for="rosnaco">Rosnąco</label><input type="radio" name="sort" id="rosnaco" value="rosnaco" ${req.body.sort == "rosnaco" ? "checked" : ""}><label for="malejaco">Malejąco</label><input type="radio" name="sort" id="malejaco" value="malejaco" ${req.body.sort == "malejaco" ? "checked" : ""}></form>`
 
-        let sortedTable = [...users];
+        let sort_tab = [...u_tab];
 
         if (req.body.sort == "rosnaco"){
-            sortedTable.sort((a,b) => a.wiek - b.wiek);
+            sort_tab.sort((a,b) => a.age - b.age);
         } else {
-            sortedTable.sort((a,b) => b.wiek - a.wiek);
+            sort_tab.sort((a,b) => b.age - a.age);
         }
 
-        response += '<table style="width:100%;">';
-        sortedTable.forEach(user => {
-            response += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>wiek: ${user.wiek}</td></tr>`;
+        y += '<table style="width:100%;">';
+        sort_tab.forEach(user => {
+            y += `<tr><td>id: ${user.id}</td><td>user: ${user.log} - ${user.pass}</td><td>age: ${user.age}</td></tr>`;
         })
-        response += "</table>"
+        y += "</table>"
 
-        res.send(response);
+        res.send(y);
     } else {
         res.redirect("/admin.html");
     }
 })
 
+
 app.use(express.static(path.join(__dirname,'static')))
+
 app.listen(port, () => {
     console.log(`Listening at http://localhost:${port}`)
 })
